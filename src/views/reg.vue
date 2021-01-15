@@ -150,12 +150,10 @@ export default {
           method: "get",
         }).then(({ data }) => {
           if (data && data.code === 200) {
-            // 发送成功
-            this.$message({
-                message: "验证码发送成功，验证码：" + data.data.code,
-                type: "success",
-                center: true,
-              });
+            // 发送成功，弹窗告知验证码
+            this.$alert(data.data.code, "手机验证码：", {
+              confirmButtonText: "确定",
+            });
           } else {
             // 获取新验证码失败
             this.$message.error(data.msg);
@@ -184,7 +182,7 @@ export default {
     },
     // 跳转登录页面
     turnToLogin() {
-      this.$router.push({ name: "Login" });
+      this.$router.replace({ name: "Login" });
     },
     // 提交注册表单
     dataFormSubmit() {
@@ -213,6 +211,12 @@ export default {
             } else {
               // 注册失败，弹出消息
               this.$message.error(data.msg);
+              // 遍历错误消息对象，弹出具体的错误项
+              Object.keys(data.errors).forEach(
+                key => {
+                  this.$message.error(data.errors[key]);
+                }
+              );
             }
           });
         }

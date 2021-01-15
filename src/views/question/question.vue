@@ -5,6 +5,9 @@
         <div class="title-content">
           <a href=""><h1 v-text="question.title"></h1></a>
         </div>
+        <div class="content-box">
+          <span v-text="question.content"></span>
+        </div>
         <div class="page-view-box">
           <h3 style="color: #c0c0c0; line-height: 70px">
             浏览量：{{ question.viewCount }}
@@ -28,7 +31,18 @@
           <div class="main-left">
             <!-- 展示该提问对应的所有回答 -->
             <ul>
-              <li v-for="item in answers" :key="item">
+              <!-- 回答数组为空时，展示 -->
+              <li v-if="answers.length == 0">
+                <div class="content-wrapper">
+                  <div class="li-content">
+                    <!-- 回答内容 -->
+                    <div class="content-text">
+                      <span> 该问题暂没有回答 </span>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li v-for="item in answers" :key="item.id">
                 <div class="content-wrapper">
                   <!-- 作者简介 -->
                   <div class="li-author-info-box">
@@ -37,16 +51,16 @@
                       <el-avatar
                         shape="square"
                         :size="48"
-                        :src="item.author.avatar"
+                        :src="avatar"
                       ></el-avatar>
                     </div>
                     <!-- 昵称 + 个性签名 -->
                     <div class="author-content">
                       <div class="author-content-name">
-                        <a href="" v-text="item.author.nickName"></a>
+                        <a href="">未知作者</a>
                       </div>
                       <div class="author-content-des">
-                        <span v-text="item.author.description"></span>
+                        <span>未知个签</span>
                       </div>
                     </div>
                   </div>
@@ -65,7 +79,7 @@
                         {{ item.commentsCount }} 条评论
                       </el-button>
                       <span class="text-time">
-                        最后修改时间： {{ item.lastEditTime }}
+                        最后修改时间： {{ item.lastModifyTime.substring(0,10) }}
                       </span>
                     </div>
                   </div>
@@ -85,16 +99,29 @@
                   <el-avatar
                     shape="square"
                     :size="78"
-                    :src="question.author.avatar"
+                    :src="avatar"
                   ></el-avatar>
                 </div>
                 <!-- 昵称 + 个性签名 -->
                 <div class="question-author-content">
                   <div class="question-author-content-name">
-                    <a href="" v-text="question.author.nickName"></a>
+                    <a
+                      href=""
+                      v-text="
+                        author.nickname == null
+                          ? author.username
+                          : author.nickname
+                      "
+                    ></a>
                   </div>
                   <div class="question-author-content-des">
-                    <span v-text="question.author.description"></span>
+                    <span
+                      v-text="
+                        author.sign == null
+                          ? '这个人很懒，什么都没留下！'
+                          : author.sign
+                      "
+                    ></span>
                   </div>
                 </div>
                 <div></div>
@@ -112,66 +139,77 @@ export default {
   name: "Question",
   data() {
     return {
-      qid: 1,
       question: {},
       answers: [],
+      author: {},
+      avatar:
+        "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
     };
   },
   created() {
-    this.getQuestion();
-    this.getAnswers();
+    // 获取整个页面信息
+    this.getPage();
   },
   computed: {},
   methods: {
-    getQuestion() {
-      this.qid = this.$attrs.id;
+    // 获取整个页面信息，因为有先后顺序，所以放在了同一个函数里
+    getPage() {
+      // 路由传递过来的参数：问题id
+      let qid = this.$attrs.id;
       // 发送请求获取问题
-      this.question = {
-        title: "推特永久停用特朗普账号",
-        thumbsUpCount: 10,
-        viewCount: 100,
-        commentsCount: 200,
-        author: {
-          id: 1,
-          avatar:
-            "https://pic2.zhimg.com/80/v2-a781a0f9c3bddd77ea9c679c23cdfedc_720w.jpg?source=1940ef5c",
-          nickName: "zgxh",
-          description: "心之所愿，无所不成",
-        },
-      };
+      this.$http({
+        url: this.$http.adornUrl(
+          "http://zhizhi.com/blog/question/info?qid=" + qid
+        ),
+        method: "get",
+      }).then(({ data }) => {
+        if (data && data.code === 200) {
+          this.question = data.question;
+          this.getAuthor();
+        } else {
+          this.$message.error(data.msg);
+        }
+      });
     },
+    // 获取问题所属的作者信息
+    getAuthor() {
+      // 如果问题对应的键存在，说明问题已获取成功
+      if (this.question.hasOwnProperty("uid")) {
+        let uid = this.question.uid;
+        // 发送请求获取作者信息
+        this.$http({
+          url: this.$http.adornUrl(
+            "http://member.zhizhi.com/member/info?uid=" + uid
+          ),
+          method: "get",
+        }).then(({ data }) => {
+          if (data && data.code === 200) {
+            this.author = data.member;
+            this.getAnswers();
+          } else {
+            this.$message.error(data.msg);
+          }
+        });
+      }
+    },
+    // 获取问题的所有回答
     getAnswers() {
-      // 发送请求获取所有的回答
-      this.answers = [
-        {
-          id: 1,
-          author: {
-            avatar:
-              "https://pic2.zhimg.com/80/v2-a781a0f9c3bddd77ea9c679c23cdfedc_720w.jpg?source=1940ef5c",
-            nickName: "zgxh",
-            description: "心之所愿，无所不成",
-          },
-          content:
-            "Day1晚上10点，你和我说很困，要早点睡，于是我们互道了晚安，但睡不着的我发现你微信运动步数增加了832步，那个距离大概你宿舍到学校门口的单程距离。呵，男人，背着我深夜偷吃外卖。咒你长胖。但很快，我发现了问题。微信步数没有增加，你没回宿舍。咋的啦？手机掉外卖里了？很快，晚上11点，你的运动步数增加了107步，之后就再也没有增加。这说明你一宿没回学校。",
-          lastEditTime: "2020-1-1",
-          thumbsUpCount: 100,
-          commentsCount: 200,
-        },
-        {
-          id: 2,
-          author: {
-            avatar:
-              "https://pic2.zhimg.com/80/v2-a781a0f9c3bddd77ea9c679c23cdfedc_720w.jpg?source=1940ef5c",
-            nickName: "zgxh",
-            description: "心之所愿，无所不成",
-          },
-          content:
-            "Day2我一夜没睡着，过半个小时拿起手机再看看，屏幕上的数字明晃晃地躺在那里，一动不动，我觉得非常刺眼。挨到早上7点，我给你发了消息：“早呀亲爱的，你睡了9个小时了。”你没回我。我的头发丝开始绿了。8点左右，你的微信步数变成了1568步。你还是没回我消息。我的脸开始绿了。我打开手机相册，找到你的课表，发现你早上第一节有课。教学楼的位置和微信步数的变化能对得上。9点多，你终于回我消息了。“对不起宝宝，昨天太累了，差点睡过头，赶着上早课就没回你哦。",
-          lastEditTime: "2020-1-1",
-          thumbsUpCount: 100,
-          commentsCount: 200,
-        },
-      ];
+      if (this.question.hasOwnProperty("id")) {
+        let qid = this.question.id;
+        // 发送请求获取作者信息
+        this.$http({
+          url: this.$http.adornUrl(
+            "http://zhizhi.com/blog/answer/all?qid=" + qid
+          ),
+          method: "get",
+        }).then(({ data }) => {
+          if (data && data.code === 200) {
+            this.answers = data.answers;
+          } else {
+            this.$message.error(data.msg);
+          }
+        });
+      }
     },
   },
 };
@@ -195,8 +233,13 @@ export default {
 }
 .title-content {
   width: 946.66px;
-  margin-bottom: 50px;
+  margin-bottom: 10px;
   display: inline-block;
+}
+.content-box {
+  font-size: 20px;
+  line-height: 30px;
+  margin-bottom: 30px;
 }
 .page-view-box {
   display: inline-block;

@@ -2,7 +2,7 @@
   <el-header class="nav">
     <div class="nav-body">
       <el-menu
-        :default-active="1"
+        :default-active="defaultActive"
         class="el-menu-demo"
         mode="horizontal"
         @select="handleSelect"
@@ -44,7 +44,7 @@
           <template slot="title">
             <!-- 展示用户名 + 头像 -->
             <el-avatar :src="userInfo.avatar"> </el-avatar>
-            &nbsp; {{ userInfo.username }}
+            &nbsp; {{ username }}
           </template>
           <!-- 下拉菜单 -->
           <el-menu-item index="3-1">
@@ -56,7 +56,7 @@
           <el-menu-item index="3-3">
             <i class="el-icon-s-opportunity"></i> 我的回答
           </el-menu-item>
-          <el-menu-item index="3-4">
+          <el-menu-item index="logout">
             <i class="el-icon-error"></i> 退出登录
           </el-menu-item>
         </el-submenu>
@@ -113,13 +113,14 @@
 </template>
 
 <script>
+import { clearLoginInfo } from '@/utils/util'
 export default {
   name: "AppHeader",
   data() {
     return {
       // 保存用户信息
       userInfo: {
-        username: "未知用户",
+        // username: "未知用户",
         avatar:
           "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
       },
@@ -129,38 +130,36 @@ export default {
         newAnswersCount: 0,
         newFollowersCount: 0,
       },
-      isLogin: true, // 标识用户是否登录
       keyword: "", // 搜索的内容
+      defaultActive: "1",
     };
   },
   created() {
-    this.getUserInfo();
     this.getMessageCenter();
   },
-  computed: {},
+  computed: {
+    username: {
+      get() {
+        return this.$store.state.user.name;
+      },
+    },
+    isLogin: {
+      get() {
+        return this.$store.state.user.name != "未登录用户";
+      },
+    },
+  },
   methods: {
     // 导航栏某项选中后的操作
     handleSelect(key, keyPath) {
-      // console.log(key, keyPath);
+      console.log(key, keyPath);
+      if (key == "logout") {
+        this.logout();
+      }
     },
     // 跳转登录页面
     turnToLogin() {
       this.$router.push({ name: "Login" });
-    },
-    // 获取用户信息
-    getUserInfo() {
-      this.$http({
-        url: this.$http.adornUrl("http://获取用户信息的api"),
-        method: "get",
-      }).then(({ data }) => {
-        if (data && data.code === 200) {
-          this.username = data.username;
-          this.isLogin = true;
-        } else {
-          this.isLogin = false;
-          // this.$message.error(data.msg);
-        }
-      });
     },
     // 获取新的评论数、回复数、关注数
     getMessageCenter() {
@@ -172,6 +171,11 @@ export default {
         path: "/search?keyword=" + this.keyword,
       });
       window.open(href, "_blank");
+    },
+    // 注销登录：遗忘jwt token，然后跳转登录页面
+    logout() {
+      clearLoginInfo()
+      this.$router.replace({ name: "Login" });
     },
   },
 };

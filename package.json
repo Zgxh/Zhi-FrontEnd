@@ -12,10 +12,12 @@
   },
   "dependencies": {
     "axios": "0.17.1",
+    "lodash": "4.17.5",
     "element-ui": "^2.14.1",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
-    "vue-cookie": "1.1.4"
+    "vue-cookie": "1.1.4",
+    "vuex": "3.0.1"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

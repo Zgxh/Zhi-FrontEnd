@@ -45,8 +45,6 @@
       <div>
         <el-link icon="el-icon-success" href="https://api.weibo.com/oauth2/authorize?client_id=4222624238&response_type=code&redirect_uri=auth.zhizhi.com/auth/oauth2/weibo/success
 ">微博登录</el-link>
-        <el-link icon="el-icon-edit">微信登录</el-link>
-        <el-link>查看<i class="el-icon-view el-icon--right"></i> </el-link>
       </div>
     </div>
   </div>
@@ -91,18 +89,23 @@ export default {
       this.$refs["dataForm"].validate((valid) => {
         if (valid) {
           this.$http({
-            url: this.$http.adornUrl("http://auth.zhizhi.com/auth/login/"),
+            url: this.$http.adornUrl("http://auth.zhizhi.com/auth/oauth/token"),
             method: "post",
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'}, // 表单提交
             data: this.$http.adornData({
+              grant_type: "password",
+              client_id: "client-app",
+              client_secret: "123456",
               username: this.dataForm.userName,
               password: this.dataForm.password,
-              uuid: this.dataForm.uuid,
-              captcha: this.dataForm.captcha,
-            }),
+              // uuid: this.dataForm.uuid,
+              // captcha: this.dataForm.captcha,
+            }, false, 'form'),
           }).then(({ data }) => {
             if (data && data.code === 200) {
-              this.$cookie.set("token", data.token);
-              this.$router.replace({ name: "home" });
+              // 登录成功，设置token
+              this.$cookie.set("Authorization", "Bearer " + data.data.token);
+              this.$router.replace({ name: "Newest" });
             } else {
               this.getCaptcha();
               this.$message.error(data.msg);
