@@ -1,11 +1,16 @@
 <template>
-  <div class="total" v-loading.fullscreen.lock="loading"
-    element-loading-text="拼命加载中">
+  <div
+    class="total"
+    v-loading.fullscreen.lock="loading"
+    element-loading-text="拼命加载中"
+  >
     <el-container style="min-height: 1200px">
       <!-- 公共组件:导航栏，除登录与注册页外，所有组件都需要嵌套导航栏 -->
       <app-header />
       <!-- main 实体路由 -->
       <router-view />
+      <!-- 回到顶部组件 -->
+      <el-backtop></el-backtop>
     </el-container>
   </div>
 </template>
@@ -20,7 +25,7 @@ export default {
   data() {
     return {
       loading: true, // loading状态是为了保证用户信息的刷新在得到用户信息之后
-    }
+    };
   },
   computed: {
     userId: {
@@ -52,7 +57,7 @@ export default {
       }).then(({ data }) => {
         if (data && data.code === 200) {
           // 获取成功后，在本地存储信息
-          this.loading = false
+          this.loading = false;
           this.userId = data.data.id;
           this.name = data.data.username;
         }

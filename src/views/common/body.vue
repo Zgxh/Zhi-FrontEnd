@@ -1,5 +1,6 @@
 <template>
   <el-main>
+    <!-- 主体 -->
     <div class="main-body">
       <el-row>
         <el-col :span="16">
@@ -37,7 +38,11 @@
               </el-carousel>
             </div>
             <div class="author-tool">
-              <el-button type="text" class="author-tool-left">
+              <el-button
+                type="text"
+                class="author-tool-left"
+                @click="createQuestionDialogVisiable = true"
+              >
                 <div class="author-tool-button">
                   <i class="el-icon-edit-outline"></i>
                 </div>
@@ -60,6 +65,48 @@
         </el-col>
       </el-row>
     </div>
+    <el-dialog
+      title="新建提问"
+      :visible.sync="createQuestionDialogVisiable"
+      style="width: 1300px; margin: 0 auto"
+    >
+      <el-form
+        :model="newQuestionForm"
+        :rules="newQuestionRules"
+        ref="newQuestionForm"
+      >
+        <el-form-item label="标题" :label-width="formLabelWidth" prop="title">
+          <el-input
+            v-model="newQuestionForm.title"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item
+          label="封面图(链接)"
+          :label-width="formLabelWidth"
+          prop="coverImg"
+        >
+          <el-input
+            v-model="newQuestionForm.coverImg"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="内容" :label-width="formLabelWidth" prop="content">
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 2, maxRows: 6 }"
+            v-model="newQuestionForm.content"
+          >
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="createQuestionDialogVisiable = false"
+          >取 消</el-button
+        >
+        <el-button type="primary" @click="createNewQuestion">发 布</el-button>
+      </div>
+    </el-dialog>
   </el-main>
 </template>
 
@@ -70,6 +117,23 @@ export default {
     return {
       // 走马灯广告
       lampSrc: [],
+      // 创建问题的表单弹窗的可见性
+      createQuestionDialogVisiable: false,
+      // 新建问题表单
+      newQuestionForm: {
+        title: "",
+        content: "",
+        coverImg: "",
+        uid: this.$store.state.user.userId,
+      },
+      // 新建问题表单校验规则
+      newQuestionRules: {
+        title: [{ required: true, message: "标题必须填写", trigger: "blur" }],
+        content: [
+          { required: true, message: "请填写问题描述", trigger: "blur" },
+        ],
+      },
+      formLabelWidth: "120px",
     };
   },
   created() {
@@ -77,13 +141,44 @@ export default {
   },
   computed: {},
   methods: {
+    // 获取走马灯广告数组
     getLampSrc() {
-      // 获取走马灯广告数组
       this.lampSrc = [
         "https://dss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=1186896924,2884330479&fm=26&gp=0.jpg",
         "https://dss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=2744970734,929450527&fm=111&gp=0.jpg",
         "https://dss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=4042638905,392787251&fm=26&gp=0.jpg",
-      ]
+      ];
+    },
+    // 发布新的问题
+    createNewQuestion() {
+      this.$refs["newQuestionForm"].validate((valid) => {
+        if (valid) {
+          this.$http({
+            url: this.$http.adornUrl("http://zhizhi.com/blog/question/save"),
+            method: "post",
+            data: this.$http.adornData(this.newQuestionForm, false, "json"),
+          }).then(({ data }) => {
+            if (data && data.code === 200) {
+              // 关闭表单对话框
+              this.createQuestionDialogVisiable = false;
+              // 清空表单内容
+              this.newQuestionForm.title = "";
+              this.newQuestionForm.content = "";
+              this.newQuestionForm.coverImg = "";
+              // 成功弹窗提醒
+              this.$message({ message: "问题发布成功", type: "success" });
+              // 跳转推荐页面，重新查询最新的问题
+              if (this.$route.name == 'Newest') {
+                this.$router.go(0);
+              } else {
+                this.$router.push({name: 'Newest'});
+              }
+            } else {
+              this.$message.error(data.msg);
+            }
+          });
+        }
+      });
     },
   },
 };

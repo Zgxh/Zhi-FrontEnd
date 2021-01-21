@@ -108,7 +108,11 @@ export default {
               this.$router.replace({ name: "Newest" });
             } else {
               this.getCaptcha();
-              this.$message.error(data.msg);
+              if (data.msg) {
+                this.$message.error(data.msg);
+              } else if (data.message) {
+                this.$message.error(data.message);
+              }
             }
           });
         }
