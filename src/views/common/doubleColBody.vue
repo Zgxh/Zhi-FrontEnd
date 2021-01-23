@@ -1,7 +1,7 @@
 <template>
   <el-main>
     <!-- 主体 -->
-    <div class="main-body">
+    <div class="double-main-body">
       <el-row>
         <el-col :span="16">
           <div class="main-left">
@@ -48,7 +48,11 @@
                 </div>
                 <div class="author-tool-text">创建话题</div>
               </el-button>
-              <el-button type="text" class="author-tool-left">
+              <el-button
+                type="text"
+                class="author-tool-left"
+                @click="toZeroQuestion"
+              >
                 <div class="author-tool-button">
                   <i class="el-icon-edit"></i>
                 </div>
@@ -112,7 +116,7 @@
 
 <script>
 export default {
-  name: "Body",
+  name: "DoubleColBody",
   data() {
     return {
       // 走马灯广告
@@ -124,7 +128,6 @@ export default {
         title: "",
         content: "",
         coverImg: "",
-        uid: this.$store.state.user.userId,
       },
       // 新建问题表单校验规则
       newQuestionRules: {
@@ -139,7 +142,13 @@ export default {
   created() {
     this.getLampSrc();
   },
-  computed: {},
+  computed: {
+    uid: {
+      get() {
+        return this.$store.state.user.userId;
+      },
+    },
+  },
   methods: {
     // 获取走马灯广告数组
     getLampSrc() {
@@ -149,6 +158,9 @@ export default {
         "https://dss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=4042638905,392787251&fm=26&gp=0.jpg",
       ];
     },
+    toZeroQuestion() {
+      this.$router.push({ name: "Zero" });
+    },
     // 发布新的问题
     createNewQuestion() {
       this.$refs["newQuestionForm"].validate((valid) => {
@@ -156,7 +168,16 @@ export default {
           this.$http({
             url: this.$http.adornUrl("http://zhizhi.com/blog/question/save"),
             method: "post",
-            data: this.$http.adornData(this.newQuestionForm, false, "json"),
+            data: this.$http.adornData(
+              {
+                title: this.newQuestionForm.title,
+                content: this.newQuestionForm.content,
+                coverImg: this.newQuestionForm.coverImg,
+                uid: this.uid,
+              },
+              false,
+              "json"
+            ),
           }).then(({ data }) => {
             if (data && data.code === 200) {
               // 关闭表单对话框
@@ -168,10 +189,10 @@ export default {
               // 成功弹窗提醒
               this.$message({ message: "问题发布成功", type: "success" });
               // 跳转推荐页面，重新查询最新的问题
-              if (this.$route.name == 'Newest') {
+              if (this.$route.name == "Newest") {
                 this.$router.go(0);
               } else {
-                this.$router.push({name: 'Newest'});
+                this.$router.push({ name: "Newest" });
               }
             } else {
               this.$message.error(data.msg);
@@ -189,7 +210,7 @@ export default {
   margin: 0;
   padding: 0;
 }
-.main-body {
+.double-main-body {
   width: 1600px;
   margin: 0 auto;
   background-color: #f8f8f8;

@@ -57,9 +57,9 @@ export default {
       }).then(({ data }) => {
         if (data && data.code === 200) {
           // 获取成功后，在本地存储信息
-          this.loading = false;
           this.userId = data.data.id;
           this.name = data.data.username;
+          this.loading = false;
         }
       });
     },

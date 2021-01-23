@@ -37,9 +37,12 @@
               </div>
             </div>
             <div class="content-footer">
-              <el-button type="primary" @click="thumbsUpQuestion(item)">
+              <el-button type="primary">
                 <i class="el-icon-caret-top"></i>
-                {{ item.thumbsUpCount }} 个赞
+                {{ item.thumbsUpCount }} 个 赞
+              </el-button>
+              <el-button type="primary" @click="openDialog(item)">
+                写 回 答
               </el-button>
               <el-button type="text" class="footer-button">
                 <i class="el-icon-chat-dot-round"></i>
@@ -65,13 +68,20 @@
         </div>
       </div>
     </div>
+    <!-- 回答问题的弹窗 -->
+    <new-answer-dialog
+      :createAnswerDialogVisiable="dialogVisiable"
+      :qid="qid"
+      :quid="quid"
+    ></new-answer-dialog>
   </div>
 </template>
 
 <script>
-import { thumbsUpQuestion } from "@/utils/util";
+import newAnswerDialog from "@/views/component/newAnswerDialog";
 export default {
-  name: "Newest",
+  components: { newAnswerDialog },
+  name: "Zero",
   data() {
     return {
       articles: [], // 存放文章列表
@@ -79,10 +89,14 @@ export default {
       articlesIsUnfold: [],
       loading: false,
       noMore: false,
+      dialogVisiable: false,
+      // 用于传递信息
+      qid: 0,
+      quid: 0,
     };
   },
   created() {
-    this.getNewestArticles();
+    this.getZeroAnswerQuestions();
   },
   computed: {
     // 根据展开状态决定显示的内容
@@ -109,9 +123,9 @@ export default {
       this.$set(this.articlesIsUnfold, index, false);
     },
     // 获取新的文章列表
-    getNewestArticles() {
+    getZeroAnswerQuestions() {
       this.$http({
-        url: this.$http.adornUrl("http://zhizhi.com/blog/question/list"),
+        url: this.$http.adornUrl("http://zhizhi.com/blog/question/zero/list"),
         method: "get",
         params: {
           page: this.page,
@@ -133,12 +147,14 @@ export default {
     // 继续加载
     load() {
       this.loading = true;
-      this.getNewestArticles();
+      this.getZeroAnswerQuestions();
       this.loading = false;
     },
-    thumbsUpQuestion(item) {
-      thumbsUpQuestion(item);
-    }
+    openDialog(item) {
+      this.dialogVisiable = true;
+      this.qid = item.id;
+      this.quid = item.uid;
+    },
   },
 };
 </script>

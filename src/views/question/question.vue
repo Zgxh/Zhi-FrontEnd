@@ -1,141 +1,152 @@
 <template>
-  <el-main style="padding: 0 0">
-    <div class="title-wrapper">
-      <div class="title-box">
-        <div class="title-content">
-          <a href=""><h1 v-text="question.title"></h1></a>
-        </div>
-        <div class="content-box">
-          <span v-text="question.content"></span>
-        </div>
-        <div class="page-view-box">
-          <h3 style="color: #c0c0c0; line-height: 70px">
-            浏览量：{{ question.viewCount }}
-          </h3>
-        </div>
-        <div class="title-footer-tool">
-          <el-button type="primary">
-            <i class="el-icon-edit"></i>
-            写回答
-          </el-button>
-          <el-button type="text" style="margin-left: 30px; color: #c0c0c0">
-            <i class="el-icon-chat-dot-round"></i>
-            {{ question.commentsCount }} 条评论
-          </el-button>
+  <div style="margin: 0 auto; width: 100%">
+    <el-main style="padding: 0 0">
+      <div class="title-wrapper">
+        <div class="title-box">
+          <div class="title-content">
+            <a href=""><h1 v-text="question.title"></h1></a>
+          </div>
+          <div class="content-box">
+            <span v-text="question.content"></span>
+          </div>
+          <div class="page-view-box">
+            <h3 style="color: #c0c0c0; line-height: 70px">
+              浏览量：{{ question.viewCount }}
+            </h3>
+          </div>
+          <div class="title-footer-tool">
+            <el-button type="primary" @click="openDialog">
+              <i class="el-icon-edit"></i>
+              写回答
+            </el-button>
+            <el-button type="text" style="margin-left: 30px; color: #c0c0c0">
+              <i class="el-icon-chat-dot-round"></i>
+              {{ question.commentsCount }} 条评论
+            </el-button>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="main-body">
-      <el-row>
-        <el-col :span="16">
-          <div class="main-left">
-            <!-- 展示该提问对应的所有回答 -->
-            <ul>
-              <!-- 回答数组为空时，展示 -->
-              <li v-if="answers.length == 0">
-                <div class="content-wrapper">
-                  <div class="li-content">
-                    <!-- 回答内容 -->
-                    <div class="content-text">
-                      <span> 该问题暂没有回答 </span>
-                    </div>
-                  </div>
-                </div>
-              </li>
-              <li v-for="item in answers" :key="item.id">
-                <div class="content-wrapper">
-                  <!-- 作者简介 -->
-                  <div class="li-author-info-box">
-                    <!-- 头像 -->
-                    <div class="author-avatar">
-                      <el-avatar
-                        shape="square"
-                        :size="48"
-                        :src="avatar"
-                      ></el-avatar>
-                    </div>
-                    <!-- 昵称 + 个性签名 -->
-                    <div class="author-content">
-                      <div class="author-content-name">
-                        <a href="">未知作者</a>
-                      </div>
-                      <div class="author-content-des">
-                        <span>未知个签</span>
+      <div class="main-body">
+        <el-row>
+          <el-col :span="16">
+            <div class="main-left">
+              <!-- 展示该提问对应的所有回答 -->
+              <ul>
+                <!-- 回答数组为空时，展示 -->
+                <li v-if="answers.length == 0">
+                  <div class="content-wrapper">
+                    <div class="li-content">
+                      <!-- 回答内容 -->
+                      <div class="content-text">
+                        <span> 该问题暂没有回答 </span>
                       </div>
                     </div>
                   </div>
-                  <div class="li-content">
-                    <!-- 回答内容 -->
-                    <div class="content-text">
-                      <span v-text="item.content"></span>
+                </li>
+                <li v-for="item in answers" :key="item.id">
+                  <div class="content-wrapper">
+                    <!-- 作者简介 -->
+                    <div class="li-author-info-box">
+                      <!-- 头像 -->
+                      <div class="author-avatar">
+                        <el-avatar
+                          shape="square"
+                          :size="48"
+                          :src="avatar"
+                        ></el-avatar>
+                      </div>
+                      <!-- 昵称 + 个性签名 -->
+                      <div class="author-content">
+                        <div class="author-content-name">
+                          <a href="">未知作者</a>
+                        </div>
+                        <div class="author-content-des">
+                          <span>未知个签</span>
+                        </div>
+                      </div>
                     </div>
-                    <div class="content-footer">
-                      <el-button type="primary">
-                        <i class="el-icon-caret-top"></i>
-                        {{ item.thumbsUpCount }} 个赞
-                      </el-button>
-                      <el-button type="text" class="footer-button">
-                        <i class="el-icon-chat-dot-round"></i>
-                        {{ item.commentsCount }} 条评论
-                      </el-button>
-                      <span class="text-time">
-                        最后修改时间： {{ item.lastModifyTime.substring(0,10) }}
-                      </span>
+                    <div class="li-content">
+                      <!-- 回答内容 -->
+                      <div class="content-text">
+                        <span v-text="item.content"></span>
+                      </div>
+                      <div class="content-footer">
+                        <el-button type="primary">
+                          <i class="el-icon-caret-top"></i>
+                          {{ item.thumbsUpCount }} 个赞
+                        </el-button>
+                        <el-button type="text" class="footer-button">
+                          <i class="el-icon-chat-dot-round"></i>
+                          {{ item.commentsCount }} 条评论
+                        </el-button>
+                        <span class="text-time">
+                          最后修改时间：
+                          {{ item.lastModifyTime.substring(0, 10) }}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </el-col>
-        <el-col :span="8">
-          <div class="main-right">
-            <div class="question-author-box">
-              <h2>关于作者</h2>
-              <!-- 作者简介 -->
-              <div class="li-question-author-info-box">
-                <!-- 头像 -->
-                <div class="question-author-avatar">
-                  <el-avatar
-                    shape="square"
-                    :size="78"
-                    :src="avatar"
-                  ></el-avatar>
-                </div>
-                <!-- 昵称 + 个性签名 -->
-                <div class="question-author-content">
-                  <div class="question-author-content-name">
-                    <a
-                      href=""
-                      v-text="
-                        author.nickname == null
-                          ? author.username
-                          : author.nickname
-                      "
-                    ></a>
+                </li>
+              </ul>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="main-right">
+              <div class="question-author-box">
+                <h2>关于作者</h2>
+                <!-- 作者简介 -->
+                <div class="li-question-author-info-box">
+                  <!-- 头像 -->
+                  <div class="question-author-avatar">
+                    <el-avatar
+                      shape="square"
+                      :size="78"
+                      :src="avatar"
+                    ></el-avatar>
                   </div>
-                  <div class="question-author-content-des">
-                    <span
-                      v-text="
-                        author.sign == null
-                          ? '这个人很懒，什么都没留下！'
-                          : author.sign
-                      "
-                    ></span>
+                  <!-- 昵称 + 个性签名 -->
+                  <div class="question-author-content">
+                    <div class="question-author-content-name">
+                      <a
+                        href=""
+                        v-text="
+                          author.nickname == null
+                            ? author.username
+                            : author.nickname
+                        "
+                      ></a>
+                    </div>
+                    <div class="question-author-content-des">
+                      <span
+                        v-text="
+                          author.sign == null
+                            ? '这个人很懒，什么都没留下！'
+                            : author.sign
+                        "
+                      ></span>
+                    </div>
                   </div>
+                  <div></div>
                 </div>
-                <div></div>
               </div>
             </div>
-          </div>
-        </el-col>
-      </el-row>
-    </div>
-  </el-main>
+          </el-col>
+        </el-row>
+      </div>
+    </el-main>
+    <!-- 回答问题的弹窗 -->
+    <new-answer-dialog
+      :createAnswerDialogVisiable="dialogVisiable"
+      :qid="qid"
+      :quid="quid"
+    ></new-answer-dialog>
+  </div>
 </template>
 
 <script>
+import newAnswerDialog from "@/views/component/newAnswerDialog";
 export default {
+  components: { newAnswerDialog },
   name: "Question",
   data() {
     return {
@@ -144,6 +155,10 @@ export default {
       author: {},
       avatar:
         "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
+      dialogVisiable: false,
+      // 用于传递信息
+      qid: 0,
+      quid: 0,
     };
   },
   created() {
@@ -210,6 +225,12 @@ export default {
           }
         });
       }
+    },
+    // 打开回答问题的弹窗
+    openDialog() {
+      this.dialogVisiable = true;
+      this.qid = this.question.id;
+      this.quid = this.question.uid;
     },
   },
 };

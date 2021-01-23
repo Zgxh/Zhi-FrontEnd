@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import store from '@/store'
+import router from '@/router'
 
 /**
  * 生成随机数，用于获取和校验验证码信息
@@ -17,4 +18,27 @@ export function clearLoginInfo() {
     Vue.cookie.delete('Authorization')
     store.commit('resetStore')
     // router.options.isAddDynamicMenuRoutes = false
+}
+
+/**
+ * 点赞问题
+ */
+export function thumbsUpQuestion(item) {
+    let id = item.id;
+    Vue.prototype.$http({
+        url: Vue.prototype.$http.adornUrl("http://zhizhi.com/blog/question/thumbsUp"),
+        method: "post",
+        params: {
+            id: id,
+        },
+    }).then(({ data }) => {
+        if (data && data.code === 200) {
+            // 成功弹窗提醒
+            Vue.prototype.$message({ message: "点赞成功", type: "success" });
+            // 点赞数加1
+            item.thumbsUpCount += 1;
+        } else {
+            Vue.prototype.$message.error(data.msg);
+        }
+    });
 }

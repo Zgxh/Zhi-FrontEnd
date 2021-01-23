@@ -37,13 +37,24 @@
               </div>
             </div>
             <div class="content-footer">
-              <el-button type="primary" @click="thumbsUpQuestion(item)">
+              <span type="text" class="footer-button">
                 <i class="el-icon-caret-top"></i>
-                {{ item.thumbsUpCount }} 个赞
+                {{ item.thumbsUpCount }} 个 赞
+              </span>
+              <el-button type="text" class="footer-button">
+                <i class="el-icon-edit"></i>
+                {{ item.answersCount }} 个回答
               </el-button>
               <el-button type="text" class="footer-button">
                 <i class="el-icon-chat-dot-round"></i>
                 {{ item.commentsCount }} 条评论
+              </el-button>
+              <el-button
+                type="text"
+                @click="deleteQuestion(item.id)"
+                style="margin-left: 300px"
+              >
+                删 除
               </el-button>
               <span class="text-time">
                 问题创建于 {{ item.createTime.substring(0, 10) }}
@@ -69,9 +80,8 @@
 </template>
 
 <script>
-import { thumbsUpQuestion } from "@/utils/util";
 export default {
-  name: "Newest",
+  name: "MyQuestions",
   data() {
     return {
       articles: [], // 存放文章列表
@@ -79,10 +89,11 @@ export default {
       articlesIsUnfold: [],
       loading: false,
       noMore: false,
+      dialogVisiable: false,
     };
   },
   created() {
-    this.getNewestArticles();
+    this.getMyQuestions();
   },
   computed: {
     // 根据展开状态决定显示的内容
@@ -109,11 +120,13 @@ export default {
       this.$set(this.articlesIsUnfold, index, false);
     },
     // 获取新的文章列表
-    getNewestArticles() {
+    getMyQuestions() {
+      let uid = this.$attrs.uid;
       this.$http({
-        url: this.$http.adornUrl("http://zhizhi.com/blog/question/list"),
+        url: this.$http.adornUrl("http://zhizhi.com/blog/question/list/user"),
         method: "get",
         params: {
+          uid: uid,
           page: this.page,
           limit: 10,
         },
@@ -130,15 +143,48 @@ export default {
         }
       });
     },
+    deleteQuestion(id) {
+      this.$confirm("此操作将删除该问题, 是否继续?", "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          this.$http({
+            url: this.$http.adornUrl("http://zhizhi.com/blog/question/delete"),
+            method: "delete",
+            params: {
+                id: id,
+            },
+          }).then(({ data }) => {
+            if (data && data.code === 200) {
+              // 成功弹窗提醒
+              this.$message({ message: "问题删除成功", type: "success" });
+              // 刷新页面
+              this.$router.go(0);
+            } else {
+              this.$message.error(data.msg);
+            }
+          });
+        });
+        // .catch(() => {
+        //   this.$message({
+        //     type: "info",
+        //     message: "已取消删除",
+        //   });
+        // });
+    },
     // 继续加载
     load() {
       this.loading = true;
-      this.getNewestArticles();
+      this.getMyQuestions();
       this.loading = false;
     },
-    thumbsUpQuestion(item) {
-      thumbsUpQuestion(item);
-    }
+    openDialog(item) {
+      this.dialogVisiable = true;
+      this.qid = item.id;
+      this.quid = item.uid;
+    },
   },
 };
 </script>

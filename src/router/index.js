@@ -7,12 +7,15 @@ import Reg from "@/views/Reg";
 
 // 公共组件
 import Total from "@/views/common/total";
-import Body from "@/views/common/body";
+import DoubleColBody from "@/views/common/doubleColBody";
+import SingleColBody from "@/views/common/singleColBody";
 
 // 文章列表页面
 import Newest from "@/views/pages/newest";
 import Hot from "@/views/pages/hot";
 import Follow from "@/views/pages/follow";
+import Zero from "@/views/pages/zeroAnswerQuestions";
+import MyQuestions from "@/views/pages/myQuestions";
 
 // 文章详情页面
 import Question from "@/views/question/question";
@@ -47,8 +50,8 @@ export default new Router({
       children: [
         {
           path: "/",
-          name: "Body",
-          component: Body,
+          name: "DoubleColBody",
+          component: DoubleColBody,
           children: [
             {
               path: "/",
@@ -56,25 +59,43 @@ export default new Router({
               component: Newest,
             },
             {
-              path: "/hot",
+              path: "hot",
               name: "Hot",
               component: Hot,
             },
             {
-              path: "/follow",
+              path: "follow",
               name: "Follow",
               component: Follow,
             },
           ]
         },
         {
-          path: "/search",
+          path: "single",
+          name: "SingleColBody",
+          component: SingleColBody,
+          children: [
+            {
+              path: "zero",
+              name: "Zero",
+              component: Zero,
+            },
+            {
+              path: "my/:uid",
+              name: "MyQuestions",
+              component: MyQuestions,
+              props: (route) => ({ uid: parseInt(route.params.uid) }),
+            }
+          ]
+        },
+        {
+          path: "search",
           name: "Search",
           component: Search,
           props: (route) => ({ query: route.query.keyword }),
         },
         {
-          path: "/question/:id",
+          path: "question/:id",
           name: "Question",
           component: Question,
           props: (route) => ({ id: parseInt(route.params.id) }),

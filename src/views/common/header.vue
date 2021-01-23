@@ -17,7 +17,7 @@
 
         <!-- 等你来答 -->
         <el-menu-item index="2">
-          <a href="https://www.ele.me" target="_blank"> 等你来答 </a>
+          <a href="/single/zero/"> 等你来答 </a>
         </el-menu-item>
 
         <!-- 会员中心 -->
@@ -51,7 +51,8 @@
             <i class="el-icon-user-solid"></i> 我的信息
           </el-menu-item>
           <el-menu-item index="3-2">
-            <i class="el-icon-question"></i> 我的文章
+            <i class="el-icon-question"></i> 
+            <a :href="linkToMyQuestions"> 我的文章 </a>
           </el-menu-item>
           <el-menu-item index="3-3">
             <i class="el-icon-s-opportunity"></i> 我的回答
@@ -148,6 +149,11 @@ export default {
         return this.$store.state.user.name != "未登录用户";
       },
     },
+    linkToMyQuestions: {
+      get() {
+        return "/single/my/" + this.$store.state.user.userId;
+      }
+    }
   },
   methods: {
     // 导航栏某项选中后的操作
