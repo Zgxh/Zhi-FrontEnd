@@ -42,3 +42,46 @@ export function thumbsUpQuestion(item) {
         }
     });
 }
+
+/**
+ * 获取一个问题的所有评论
+ */
+export function getQuestionComments(item) {
+    let qid = item.id;
+    Vue.prototype.$http({
+        url: Vue.prototype.$http.adornUrl("http://zhizhi.com/blog/questioncomment/question/comments"),
+        method: "get",
+        params: {
+            qid: qid,
+        },
+    }).then(({ data }) => {
+        if (data && data.code === 200) {
+            // 保存所有评论
+            item.comments['content'] = data.comments;
+        } else {
+            Vue.prototype.$message.error(data.msg);
+        }
+    });
+}
+
+/**
+ * 对某个问题发布新的评论
+ */
+export function postQuestionComment(newComment, item, uid) {
+    newComment["qid"] = item.id;
+    newComment["quid"] = item.uid;
+    newComment["uid"] = uid;
+    Vue.prototype.$http({
+        url: Vue.prototype.$http.adornUrl("http://zhizhi.com/blog/questioncomment/save"),
+        method: "post",
+        data: Vue.prototype.$http.adornData(newComment, false, "json"),
+    }).then(({ data }) => {
+        if (data && data.code === 200) {
+            // 成功弹窗提醒
+            Vue.prototype.$message({ message: "评论成功", type: "success" });
+            item.commentsCount++;
+        } else {
+            Vue.prototype.$message.error(data.msg);
+        }
+    });
+}

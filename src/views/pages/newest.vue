@@ -1,13 +1,15 @@
 <template>
   <div>
     <ul>
-      <li v-for="(item, index) in articles" :key="item.id">
+      <li v-for="item in articles" :key="item.id">
         <div class="content-wrapper">
           <!-- 标题部分 -->
           <h2 class="li-title">
             <a :href="getHref(item)" v-text="item.title + item.id"></a>
           </h2>
+          <!-- 内容 -->
           <div class="li-content">
+            <!-- 内容主体 -->
             <div>
               <!-- 封面图片 -->
               <div class="content-img" v-if="item.coverImg">
@@ -20,28 +22,37 @@
               <!-- 文章内容部分 -->
               <div class="content-text">
                 <!-- 根据展开状态决定显示的内容 -->
-                <span v-text="getText(index, item)"></span>
+                <span v-text="getText(item)"></span>
                 <!-- 查看全部/收起词条的文字按钮 -->
                 <el-button
                   type="text"
-                  @click="changeToTrue(index)"
-                  v-if="!articlesIsUnfold[index]"
+                  @click="changeQuestionContentFoldStatus(item)"
+                  v-if="item.questionContentIsfold"
                 >
                   <i class="el-icon-caret-bottom"></i>
                   查看全部</el-button
                 >
-                <el-button type="text" @click="changeToFalse(index)" v-else>
+                <el-button
+                  type="text"
+                  @click="changeQuestionContentFoldStatus(item)"
+                  v-else
+                >
                   <i class="el-icon-caret-top"></i>
                   收起词条</el-button
                 >
               </div>
             </div>
+            <!-- 内容下方的操作栏 -->
             <div class="content-footer">
               <el-button type="primary" @click="thumbsUpQuestion(item)">
                 <i class="el-icon-caret-top"></i>
                 {{ item.thumbsUpCount }} 个赞
               </el-button>
-              <el-button type="text" class="footer-button">
+              <el-button
+                type="text"
+                class="footer-button"
+                @click="getQuestionComments(item)"
+              >
                 <i class="el-icon-chat-dot-round"></i>
                 {{ item.commentsCount }} 条评论
               </el-button>
@@ -50,6 +61,62 @@
               </span>
             </div>
           </div>
+          <!-- 问题评论区卡片 -->
+          <el-card class="box-card" v-if="!item.commentIsfold">
+            <div slot="header" class="clearfix">
+              <span style="color: #c0c0c0">
+                共 {{ item.comments.content.length }} 条评论
+              </span>
+              <el-button
+                style="float: right; padding: 3px 0"
+                type="text"
+                @click="changeCommentsFoldStatus(item)"
+                >收起评论</el-button
+              >
+            </div>
+            <div>
+              <div
+                v-for="comment in getCurCommentPage(item.comments)"
+                :key="comment.id"
+                style="margin: 10px 10px"
+              >
+                <div style="font-weight: 700">用户 {{ comment.uid }} ：</div>
+                <div style="margin: 5px 10px">{{ comment.content }}</div>
+                <div style="float: right; color: #c0c0c0; margin-bottom: 10px">
+                  评论于 {{ comment.createTime.substring(0, 10) }}
+                </div>
+              </div>
+              <el-pagination
+                layout="prev, pager, next"
+                :page-size="commentPageSize"
+                :total="item.comments.content.length"
+                :current-page="item.comments.curPage"
+                @current-change="changeCommentsPage($event, item.comments)"
+              >
+              </el-pagination>
+            </div>
+            <!-- 新建评论发布区 -->
+            <el-form
+              :inline="true"
+              :model="newQuestionComment"
+              :rules="newQuestionCommentRules"
+              ref="newQuestionComment"
+              style="margin-top: 30px"
+            >
+              <el-form-item>
+                <el-input
+                  v-model="newQuestionComment.content"
+                  placeholder="在此写下你的评论"
+                  style="width: 850px"
+                ></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="postQuestionComment(item)"
+                  >发布</el-button
+                >
+              </el-form-item>
+            </el-form>
+          </el-card>
         </div>
       </li>
     </ul>
@@ -69,16 +136,31 @@
 </template>
 
 <script>
-import { thumbsUpQuestion } from "@/utils/util";
+import {
+  thumbsUpQuestion,
+  getQuestionComments,
+  postQuestionComment,
+} from "@/utils/util";
+
 export default {
   name: "Newest",
   data() {
     return {
       articles: [], // 存放文章列表
-      page: 1,
-      articlesIsUnfold: [],
+      page: 1, // 当前文章列表的页标
+      commentPageSize: 5, // 评论页的页容量
       loading: false,
       noMore: false,
+      // 新建问题评论的表单
+      newQuestionComment: {
+        content: "",
+      },
+      // 新建问题评论的表单的验证规则
+      newQuestionCommentRules: {
+        content: [
+          { required: true, message: "请填写评论内容", trigger: "blur" },
+        ],
+      },
     };
   },
   created() {
@@ -87,10 +169,10 @@ export default {
   computed: {
     // 根据展开状态决定显示的内容
     getText() {
-      return (index, item) => {
-        return this.articlesIsUnfold[index]
-          ? item.content
-          : item.content.substring(0, 100);
+      return (item) => {
+        return item.questionContentIsfold
+          ? item.content.substring(0, 100)
+          : item.content;
       };
     },
     // 根据 item 获取对应的 url
@@ -99,14 +181,34 @@ export default {
         return "/question/" + item.id;
       };
     },
+    // 当前登录的用户id
+    uid: {
+      get() {
+        return this.$store.state.user.userId;
+      },
+    },
+    // 评论区显示当前页内容
+    getCurCommentPage() {
+      return (comments) => {
+        return comments.content.slice(
+          (comments.curPage - 1) * this.commentPageSize,
+          comments.curPage * this.commentPageSize
+        );
+      };
+    },
   },
   methods: {
-    // 调整文章折叠状态
-    changeToTrue(index) {
-      this.$set(this.articlesIsUnfold, index, true);
+    // 改变问题内容区域的折叠状态
+    changeQuestionContentFoldStatus(item) {
+      item["questionContentIsfold"] = !item["questionContentIsfold"];
     },
-    changeToFalse(index) {
-      this.$set(this.articlesIsUnfold, index, false);
+    // 改变问题评论区的折叠状态
+    changeCommentsFoldStatus(item) {
+      item["commentIsfold"] = !item["commentIsfold"];
+    },
+    // 改变当前评论页的内容
+    changeCommentsPage(page, comments) {
+      comments.curPage = page;
     },
     // 获取新的文章列表
     getNewestArticles() {
@@ -120,8 +222,12 @@ export default {
       }).then(({ data }) => {
         if (data && data.code === 200) {
           data.page.list.forEach((item) => {
+            item["questionContentIsfold"] = true;
+            item["commentIsfold"] = true;
+            item["comments"] = {};
+            item.comments["curPage"] = 1;
+            item.comments["content"] = [];
             this.articles.push(item);
-            this.articlesIsUnfold.push(false);
           });
           this.page++;
         } else {
@@ -136,9 +242,24 @@ export default {
       this.getNewestArticles();
       this.loading = false;
     },
+    // 点赞
     thumbsUpQuestion(item) {
       thumbsUpQuestion(item);
-    }
+    },
+    // 获取某问题的所有评论，并展开评论区
+    getQuestionComments(item) {
+      this.changeCommentsFoldStatus(item);
+      getQuestionComments(item);
+    },
+    // 对某个问题发表新的评论
+    postQuestionComment(item) {
+      this.$refs["newQuestionComment"][0].validate((valid) => {
+        if (valid) { // 首先过表单验证
+          postQuestionComment(this.newQuestionComment, item, this.uid);
+          this.changeCommentsFoldStatus(item);
+        }
+      });
+    },
   },
 };
 </script>

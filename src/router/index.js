@@ -10,6 +10,10 @@ import Total from "@/views/common/total";
 import DoubleColBody from "@/views/common/doubleColBody";
 import SingleColBody from "@/views/common/singleColBody";
 
+// vip 组件
+import Vip from "@/views/vip/vip";
+import OrderConfirm from "@/views/vip/orderConfirm";
+
 // 文章列表页面
 import Newest from "@/views/pages/newest";
 import Hot from "@/views/pages/hot";
@@ -68,6 +72,22 @@ export default new Router({
               name: "Follow",
               component: Follow,
             },
+          ]
+        },
+        {
+          path: 'vip',
+          component: SingleColBody,
+          children: [
+            {
+              path: 'index',
+              name: 'VipIndex',
+              component: Vip,
+            },
+            {
+              path: 'order',
+              name: 'VipOrder',
+              component: OrderConfirm,
+            }
           ]
         },
         {

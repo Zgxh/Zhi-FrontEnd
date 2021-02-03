@@ -21,7 +21,9 @@
         </el-menu-item>
 
         <!-- 会员中心 -->
-        <el-menu-item index="5"> 会员中心 </el-menu-item>
+        <el-menu-item index="5">
+          <a href="/vip/index">会员中心</a>
+        </el-menu-item>
 
         <!-- 搜索框 -->
         <el-menu-item style="margin-left: 300px; width: 300px">
@@ -51,7 +53,7 @@
             <i class="el-icon-user-solid"></i> 我的信息
           </el-menu-item>
           <el-menu-item index="3-2">
-            <i class="el-icon-question"></i> 
+            <i class="el-icon-question"></i>
             <a :href="linkToMyQuestions"> 我的文章 </a>
           </el-menu-item>
           <el-menu-item index="3-3">
@@ -114,7 +116,7 @@
 </template>
 
 <script>
-import { clearLoginInfo } from '@/utils/util'
+import { clearLoginInfo } from "@/utils/util";
 export default {
   name: "AppHeader",
   data() {
@@ -152,8 +154,8 @@ export default {
     linkToMyQuestions: {
       get() {
         return "/single/my/" + this.$store.state.user.userId;
-      }
-    }
+      },
+    },
   },
   methods: {
     // 导航栏某项选中后的操作
@@ -180,7 +182,7 @@ export default {
     },
     // 注销登录：遗忘jwt token，然后跳转登录页面
     logout() {
-      clearLoginInfo()
+      clearLoginInfo();
       this.$router.replace({ name: "Login" });
     },
   },

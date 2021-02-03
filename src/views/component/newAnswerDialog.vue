@@ -10,7 +10,7 @@
         :rules="newAnswerRules"
         ref="newAnswerForm"
       >
-        <el-form-item label="内容" :label-width="formLabelWidth" prop="content">
+        <el-form-item label-width="0px" prop="content">
           <el-input
             type="textarea"
             :autosize="{ minRows: 2, maxRows: 10 }"
@@ -42,7 +42,6 @@ export default {
           { required: true, message: "请填写回答内容", trigger: "blur" },
         ],
       },
-      formLabelWidth: "120px",
     };
   },
   created() {},

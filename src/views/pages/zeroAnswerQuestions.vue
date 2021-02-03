@@ -37,9 +37,9 @@
               </div>
             </div>
             <div class="content-footer">
-              <el-button type="primary">
+              <el-button type="primary" @click="thumbsUpQuestion(item)">
                 <i class="el-icon-caret-top"></i>
-                {{ item.thumbsUpCount }} 个 赞
+                {{ item.thumbsUpCount }} 个赞
               </el-button>
               <el-button type="primary" @click="openDialog(item)">
                 写 回 答
@@ -79,6 +79,7 @@
 
 <script>
 import newAnswerDialog from "@/views/component/newAnswerDialog";
+import { thumbsUpQuestion } from "@/utils/util";
 export default {
   components: { newAnswerDialog },
   name: "Zero",
@@ -155,6 +156,10 @@ export default {
       this.qid = item.id;
       this.quid = item.uid;
     },
+    // 点赞
+    thumbsUpQuestion(item) {
+      thumbsUpQuestion(item);
+    }
   },
 };
 </script>
