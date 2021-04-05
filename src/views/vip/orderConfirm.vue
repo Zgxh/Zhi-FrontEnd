@@ -6,6 +6,7 @@
     <div>
       <button @click="confirmOrder">提交订单</button>
     </div>
+    <span v-html="html"></span>
   </div>
 </template>
 
@@ -16,6 +17,7 @@ export default {
     return {
       orderInfo: {},
       vipOrderToken: "",
+      html: "",
     };
   },
   created() {
@@ -36,6 +38,7 @@ export default {
         }
       });
     },
+    // 确认并创建订单
     confirmOrder() {
       this.$http({
         url: this.$http.adornUrl("http://order.zhizhi.com/order/vip/submit"),
@@ -52,10 +55,38 @@ export default {
         ),
       }).then(({ data }) => {
         if (data && data.code === 200) {
-          // 拿到订单号，跳转支付页面
+          // 订单创建成功，去支付页面
+          let gotVipOrderInfo = data.orderInfo;
+          this.postPayment(gotVipOrderInfo);
         } else {
-          // 回到获取订单信息的页面，重新获取vip订单信息
+          // 订单提交失败，清除数据，刷新页面，重新获取vip订单信息
+          this.orderInfo = {};
+          this.vipOrderToken = "";
+          this.$router.go(0);
         }
+      });
+    },
+    // 去支付
+    postPayment(orderInfo) {
+      this.$http({
+        url: this.$http.adornUrl("http://order.zhizhi.com/order/pay/confirm"),
+        method: "post",
+        data: this.$http.adornData(
+          {
+            orderNumber: orderInfo.orderNumber,
+            totalAmount: orderInfo.totalAmount,
+            payment: "支付宝",
+          },
+          false,
+          "json"
+        ),
+      }).then((data) => {
+        console.log(data.data);
+        const div = document.createElement("div");
+        /* 此处form就是后台返回接收到的数据 */
+        div.innerHTML = data.data;
+        document.body.appendChild(div);
+        document.forms[0].submit();
       });
     },
   },

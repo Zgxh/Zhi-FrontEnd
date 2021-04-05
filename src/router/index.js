@@ -13,6 +13,8 @@ import SingleColBody from "@/views/common/singleColBody";
 // vip 组件
 import Vip from "@/views/vip/vip";
 import OrderConfirm from "@/views/vip/orderConfirm";
+import PaySuccess from "@/views/vip/paySuccess";
+import Pay from "@/views/vip/pay";
 
 // 文章列表页面
 import Newest from "@/views/pages/newest";
@@ -40,6 +42,11 @@ export default new Router({
       path: '/login',
       name: 'Login',
       component: Login
+    },
+    {
+      path: '/pay',
+      name: 'Pay',
+      component: Pay,
     },
     {
       path: '/reg',
@@ -87,6 +94,11 @@ export default new Router({
               path: 'order',
               name: 'VipOrder',
               component: OrderConfirm,
+            },
+            {
+              path: 'pay/success',
+              name: 'PaySuccess',
+              component: PaySuccess,
             }
           ]
         },
