@@ -4,6 +4,7 @@ import Router from 'vue-router'
 // 自由组件，无需嵌套上下及左右边框
 import Login from "@/views/login";
 import Reg from "@/views/Reg";
+import WeiboSuccess from "@/views/WeiboSuccess";
 
 // 公共组件
 import Total from "@/views/common/total";
@@ -52,6 +53,11 @@ export default new Router({
       path: '/reg',
       name: 'Reg',
       component: Reg
+    },
+    {
+      path: '/weibo/success',
+      name: 'WeiboSuccess',
+      component: WeiboSuccess,
     },
     // 主页嵌套路由
     {

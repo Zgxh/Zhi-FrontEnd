@@ -42,9 +42,21 @@
           >
         </el-form-item>
       </el-form>
+      <h4 class="third-login-text">从第三方登录：</h4>
       <div>
-        <el-link icon="el-icon-success" href="https://api.weibo.com/oauth2/authorize?client_id=4222624238&response_type=code&redirect_uri=auth.zhizhi.com/auth/oauth2/weibo/success
-">微博登录</el-link>
+        <!-- 微博第三方登录链接 -->
+        <!-- 如果用户同意授权，则重定向到指定页面，并携带code值向服务端发起请求 -->
+        <el-link
+          href="https://api.weibo.com/oauth2/authorize?client_id=4222624238&response_type=code&redirect_uri=my.zhizhi.com/weibo/success"
+        >
+          <img
+            src="http://img.t.sinajs.cn/t4/appstyle/open/images/website/loginbtn/loginbtn_06.png"
+            alt=""
+          />
+        </el-link>
+        <!-- <el-link href="https://api.weibo.com/oauth2/authorize?client_id=4222624238&response_type=code&redirect_uri=auth.zhizhi.com/auth/oauth2/weibo/success">
+          <img src="" alt="">
+        </el-link> -->
       </div>
     </div>
   </div>
@@ -91,16 +103,20 @@ export default {
           this.$http({
             url: this.$http.adornUrl("http://auth.zhizhi.com/auth/oauth/token"),
             method: "post",
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'}, // 表单提交
-            data: this.$http.adornData({
-              grant_type: "password",
-              client_id: "client-app",
-              client_secret: "123456",
-              username: this.dataForm.userName,
-              password: this.dataForm.password,
-              // uuid: this.dataForm.uuid,
-              // captcha: this.dataForm.captcha,
-            }, false, 'form'),
+            headers: { "Content-Type": "application/x-www-form-urlencoded" }, // 表单提交
+            data: this.$http.adornData(
+              {
+                grant_type: "password",
+                client_id: "client-app",
+                client_secret: "123456",
+                username: this.dataForm.userName,
+                password: this.dataForm.password,
+                uuid: this.dataForm.uuid,
+                captcha: this.dataForm.captcha,
+              },
+              false,
+              "form"
+            ),
           }).then(({ data }) => {
             if (data && data.code === 200) {
               // 登录成功，设置token
@@ -189,6 +205,7 @@ export default {
   }
   .login-title {
     font-size: 16px;
+    margin-bottom: 20px;
   }
   .login-captcha {
     overflow: hidden;
@@ -198,9 +215,12 @@ export default {
     }
   }
   .login-btn-submit {
-    // width: 100%;
     width: 45%;
-    margin-top: 38px;
+    margin-top: 20px;
+  }
+  .third-login-text {
+    font-size: 13px;
+    margin-bottom: 10px;
   }
 }
 </style>
